@@ -1,0 +1,195 @@
+# ===========================
+# Operating System Files
+# ===========================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+
+# ===========================
+# MATLAB
+# ===========================
+
+# MATLAB autosave files
+*.asv
+*.m~
+
+# MATLAB code generation
+codegen/
+slprj/
+
+# MATLAB app designer
+*.mlapp.autosave
+
+# Simulink autosave
+*.autosave
+
+
+# ===========================
+# Abaqus
+# ===========================
+
+# Abaqus output files
+*.odb
+*.dat
+*.msg
+*.sta
+*.prt
+*.sim
+*.stt
+*.mdl
+*.res
+*.023
+*.pac
+*.sel
+*.log
+*.com
+
+# Abaqus lock files
+*.lck
+
+# Abaqus temporary files
+abaqus.rpy
+abaqus.rpy.*
+
+
+# ===========================
+# Julia
+# ===========================
+
+# Julia compiled files
+*.ji
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+
+# Julia package manager
+/Manifest.toml  # Uncomment if you want to ignore (debatable)
+/deps/deps.jl
+
+# Local Julia history
+.julia_history
+
+
+# ===========================
+# Python (for Abaqus scripts)
+# ===========================
+
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+
+# ===========================
+# Jupyter Notebooks
+# ===========================
+
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Jupyter notebook metadata
+*.ipynb_meta
+
+
+# ===========================
+# Data and Results
+# ===========================
+
+# Large result files (use Git LFS for tracking if needed)
+*.vtk
+*.vtu
+*.hdf5
+*.h5
+
+# Temporary data
+/data/temp/
+/results/temp/
+
+# Specific large output directories
+/matlab/results/*.mat
+/julia/results/*.jld2
+/abaqus/results/*.odb
+
+
+# ===========================
+# Documentation Build Files
+# ===========================
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.pdf  # Remove this line if you want to track PDFs
+
+
+# ===========================
+# Editor and IDE
+# ===========================
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains (PyCharm, IntelliJ)
+.idea/
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+
+# ===========================
+# Miscellaneous
+# ===========================
+
+# Backup files
+*.bak
+*.backup
+
+# Compressed files (unless explicitly needed)
+*.zip
+*.tar.gz
+*.rar
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/

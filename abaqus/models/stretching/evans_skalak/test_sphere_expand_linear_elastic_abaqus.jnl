@@ -1,0 +1,19 @@
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.models['Model-2'].steps['Step-1'].setValues(improvedDtMethod=ON, 
+    maxIncrement=None, scaleFactor=1.0, timeIncrementationMethod=
+    AUTOMATIC_GLOBAL)
+mdb.models['Model-2'].steps['Step-1'].setValues(improvedDtMethod=ON, 
+    timeIncrementationMethod=FIXED_USER_DEFINED_INC, userDefinedInc=0.0005)
+# Save by nmosta5 on 2025_11_16-23.17.30; build 2025 2024_09_20-08.00.46 RELr427 198590

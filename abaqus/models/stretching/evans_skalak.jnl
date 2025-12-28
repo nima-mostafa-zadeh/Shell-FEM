@@ -1,0 +1,241 @@
+# -*- coding: mbcs -*-
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.Model(modelType=STANDARD_EXPLICIT, name='Model-2')
+mdb.models['Model-2'].ConstrainedSketch(name='__profile__', sheetSize=10.0)
+mdb.models['Model-2'].sketches['__profile__'].sketchOptions.setValues(
+    viewStyle=AXISYM)
+mdb.models['Model-2'].sketches['__profile__'].ConstructionLine(point1=(0.0, 
+    -5.0), point2=(0.0, 5.0))
+mdb.models['Model-2'].sketches['__profile__'].FixedConstraint(entity=
+    mdb.models['Model-2'].sketches['__profile__'].geometry[2])
+mdb.models['Model-2'].sketches['__profile__'].Line(point1=(1.0, 0.0), point2=(
+    1.0, 1.0))
+mdb.models['Model-2'].sketches['__profile__'].VerticalConstraint(addUndoState=
+    False, entity=mdb.models['Model-2'].sketches['__profile__'].geometry[3])
+mdb.models['Model-2'].Part(dimensionality=AXISYMMETRIC, name='Part-Cylinder', 
+    type=DEFORMABLE_BODY)
+mdb.models['Model-2'].parts['Part-Cylinder'].BaseWire(sketch=
+    mdb.models['Model-2'].sketches['__profile__'])
+del mdb.models['Model-2'].sketches['__profile__']
+mdb.models['Model-2'].parts['Part-Cylinder'].seedPart(deviationFactor=0.1, 
+    minSizeFactor=0.1, size=0.1)
+mdb.models['Model-2'].parts['Part-Cylinder'].generateMesh()
+mdb.models['Model-2'].Material(name='Material-Cylinder')
+mdb.models['Model-2'].materials['Material-Cylinder'].Density(table=((10.0, ), 
+    ))
+mdb.models['Model-2'].materials['Material-Cylinder'].Damping(alpha=100.0)
+mdb.models['Model-2'].materials['Material-Cylinder'].Elastic(table=((
+    1475.40983606557, 0.475409836065574), ))
+mdb.models['Model-2'].HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+    integrationRule=GAUSS, material='Material-Cylinder', name=
+    'Section-Cylinder', nodalThicknessField='', numIntPts=3, poissonDefinition=
+    DEFAULT, preIntegrate=OFF, temperature=GRADIENT, thickness=0.01, 
+    thicknessField='', thicknessModulus=None, thicknessType=UNIFORM, 
+    useDensity=OFF)
+mdb.models['Model-2'].parts['Part-Cylinder'].Set(edges=
+    mdb.models['Model-2'].parts['Part-Cylinder'].edges.getSequenceFromMask((
+    '[#1 ]', ), ), name='Set-1')
+mdb.models['Model-2'].parts['Part-Cylinder'].SectionAssignment(offset=0.0, 
+    offsetField='', offsetType=MIDDLE_SURFACE, region=
+    mdb.models['Model-2'].parts['Part-Cylinder'].sets['Set-1'], sectionName=
+    'Section-Cylinder', thicknessAssignment=FROM_SECTION)
+mdb.models['Model-2'].rootAssembly.DatumCsysByThreePoints(coordSysType=
+    CYLINDRICAL, origin=(0.0, 0.0, 0.0), point1=(1.0, 0.0, 0.0), point2=(0.0, 
+    0.0, -1.0))
+mdb.models['Model-2'].rootAssembly.Instance(dependent=ON, name=
+    'Part-Cylinder-1', part=mdb.models['Model-2'].parts['Part-Cylinder'])
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Top', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Anchor', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-2'].rootAssembly.regenerate()
+mdb.models['Model-2'].ExplicitDynamicsStep(improvedDtMethod=ON, name='Step-1', 
+    nlgeom=ON, previous='Initial', timeIncrementationMethod=
+    FIXED_USER_DEFINED_INC, timePeriod=100, userDefinedInc=0.0005)
+mdb.models['Model-2'].SmoothStepAmplitude(data=((0.0, 0.0), (10, 1.0), (100, 
+    1.0)), name='Amp-1', timeSpan=STEP)
+mdb.models['Model-2'].ConcentratedForce(amplitude='Amp-1', cf2=0.01, 
+    createStepName='Step-1', distributionType=UNIFORM, field='', localCsys=None
+    , name='Load-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Top'])
+mdb.models['Model-2'].YsymmBC(createStepName='Step-1', localCsys=None, name=
+    'BC-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Anchor'])
+mdb.Job(activateLoadBalancing=False, atTime=None, contactPrint=OFF, 
+    description='', echoPrint=OFF, explicitPrecision=DOUBLE_PLUS_PACK, 
+    historyPrint=OFF, memory=90, memoryUnits=PERCENTAGE, model='Model-2', 
+    modelPrint=OFF, multiprocessingMode=DEFAULT, name='Stretch-test1', 
+    nodalOutputPrecision=FULL, numCpus=1, numDomains=1, queue=None, 
+    resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
+    0, waitMinutes=0)
+mdb.models['Model-2'].Material(name='Material-2')
+mdb.models['Model-2'].materials['Material-2'].Density(table=((10.0, ), ))
+mdb.models['Model-2'].materials['Material-2'].Depvar(n=4)
+mdb.models['Model-2'].materials['Material-2'].UserMaterial(mechanicalConstants=
+    (500.0, 10000.0))
+mdb.models['Model-2'].materials['Material-2'].Damping(alpha=100.0)
+# Save by nmosta5 on 2025_10_22-17.02.20; build 2025 2024_09_20-08.00.46 RELr427 198590
+from part import *
+from material import *
+from section import *
+from assembly import *
+from step import *
+from interaction import *
+from load import *
+from mesh import *
+from optimization import *
+from job import *
+from sketch import *
+from visualization import *
+from connectorBehavior import *
+mdb.Model(modelType=STANDARD_EXPLICIT, name='Model-2')
+mdb.models['Model-2'].ConstrainedSketch(name='__profile__', sheetSize=10.0)
+mdb.models['Model-2'].sketches['__profile__'].sketchOptions.setValues(
+    viewStyle=AXISYM)
+mdb.models['Model-2'].sketches['__profile__'].ConstructionLine(point1=(0.0, 
+    -5.0), point2=(0.0, 5.0))
+mdb.models['Model-2'].sketches['__profile__'].FixedConstraint(entity=
+    mdb.models['Model-2'].sketches['__profile__'].geometry[2])
+mdb.models['Model-2'].sketches['__profile__'].Line(point1=(1.0, 0.0), point2=(
+    1.0, 1.0))
+mdb.models['Model-2'].sketches['__profile__'].VerticalConstraint(addUndoState=
+    False, entity=mdb.models['Model-2'].sketches['__profile__'].geometry[3])
+mdb.models['Model-2'].Part(dimensionality=AXISYMMETRIC, name='Part-Cylinder', 
+    type=DEFORMABLE_BODY)
+mdb.models['Model-2'].parts['Part-Cylinder'].BaseWire(sketch=
+    mdb.models['Model-2'].sketches['__profile__'])
+del mdb.models['Model-2'].sketches['__profile__']
+mdb.models['Model-2'].parts['Part-Cylinder'].seedPart(deviationFactor=0.1, 
+    minSizeFactor=0.1, size=0.1)
+mdb.models['Model-2'].parts['Part-Cylinder'].generateMesh()
+mdb.models['Model-2'].Material(name='Material-Cylinder')
+mdb.models['Model-2'].materials['Material-Cylinder'].Density(table=((10.0, ), 
+    ))
+mdb.models['Model-2'].materials['Material-Cylinder'].Damping(alpha=100.0)
+mdb.models['Model-2'].materials['Material-Cylinder'].Depvar(n=4)
+mdb.models['Model-2'].materials['Material-Cylinder'].UserMaterial(
+    mechanicalConstants=(500.0, 10000.0))
+mdb.models['Model-2'].HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+    integrationRule=GAUSS, material='Material-Cylinder', name=
+    'Section-Cylinder', nodalThicknessField='', numIntPts=3, poissonDefinition=
+    DEFAULT, preIntegrate=OFF, temperature=GRADIENT, thickness=0.01, 
+    thicknessField='', thicknessModulus=None, thicknessType=UNIFORM, 
+    useDensity=OFF)
+mdb.models['Model-2'].parts['Part-Cylinder'].Set(edges=
+    mdb.models['Model-2'].parts['Part-Cylinder'].edges.getSequenceFromMask((
+    '[#1 ]', ), ), name='Set-1')
+mdb.models['Model-2'].parts['Part-Cylinder'].SectionAssignment(offset=0.0, 
+    offsetField='', offsetType=MIDDLE_SURFACE, region=
+    mdb.models['Model-2'].parts['Part-Cylinder'].sets['Set-1'], sectionName=
+    'Section-Cylinder', thicknessAssignment=FROM_SECTION)
+mdb.models['Model-2'].rootAssembly.DatumCsysByThreePoints(coordSysType=
+    CYLINDRICAL, origin=(0.0, 0.0, 0.0), point1=(1.0, 0.0, 0.0), point2=(0.0, 
+    0.0, -1.0))
+mdb.models['Model-2'].rootAssembly.Instance(dependent=ON, name=
+    'Part-Cylinder-1', part=mdb.models['Model-2'].parts['Part-Cylinder'])
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Top', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Anchor', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-2'].rootAssembly.regenerate()
+mdb.models['Model-2'].ExplicitDynamicsStep(improvedDtMethod=ON, name='Step-1', 
+    nlgeom=ON, previous='Initial', timeIncrementationMethod=
+    FIXED_USER_DEFINED_INC, timePeriod=100, userDefinedInc=0.0005)
+mdb.models['Model-2'].SmoothStepAmplitude(data=((0.0, 0.0), (10, 1.0), (100, 
+    1.0)), name='Amp-1', timeSpan=STEP)
+mdb.models['Model-2'].ConcentratedForce(amplitude='Amp-1', cf2=0.01, 
+    createStepName='Step-1', distributionType=UNIFORM, field='', localCsys=None
+    , name='Load-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Top'])
+mdb.models['Model-2'].YsymmBC(createStepName='Step-1', localCsys=None, name=
+    'BC-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Anchor'])
+mdb.Job(activateLoadBalancing=False, atTime=None, contactPrint=OFF, 
+    description='', echoPrint=OFF, explicitPrecision=DOUBLE_PLUS_PACK, 
+    historyPrint=OFF, memory=90, memoryUnits=PERCENTAGE, model='Model-2', 
+    modelPrint=OFF, multiprocessingMode=DEFAULT, name='Stretch-test1', 
+    nodalOutputPrecision=FULL, numCpus=1, numDomains=1, queue=None, 
+    resultsFormat=ODB, scratch='', type=ANALYSIS, userSubroutine='', waitHours=
+    0, waitMinutes=0)
+mdb.Model(modelType=STANDARD_EXPLICIT, name='Model-2')
+mdb.models['Model-2'].ConstrainedSketch(name='__profile__', sheetSize=10.0)
+mdb.models['Model-2'].sketches['__profile__'].sketchOptions.setValues(
+    viewStyle=AXISYM)
+mdb.models['Model-2'].sketches['__profile__'].ConstructionLine(point1=(0.0, 
+    -5.0), point2=(0.0, 5.0))
+mdb.models['Model-2'].sketches['__profile__'].FixedConstraint(entity=
+    mdb.models['Model-2'].sketches['__profile__'].geometry[2])
+mdb.models['Model-2'].sketches['__profile__'].Line(point1=(1.0, 0.0), point2=(
+    1.0, 1.0))
+mdb.models['Model-2'].sketches['__profile__'].VerticalConstraint(addUndoState=
+    False, entity=mdb.models['Model-2'].sketches['__profile__'].geometry[3])
+mdb.models['Model-2'].Part(dimensionality=AXISYMMETRIC, name='Part-Cylinder', 
+    type=DEFORMABLE_BODY)
+mdb.models['Model-2'].parts['Part-Cylinder'].BaseWire(sketch=
+    mdb.models['Model-2'].sketches['__profile__'])
+del mdb.models['Model-2'].sketches['__profile__']
+mdb.models['Model-2'].parts['Part-Cylinder'].seedPart(deviationFactor=0.1, 
+    minSizeFactor=0.1, size=0.1)
+mdb.models['Model-2'].parts['Part-Cylinder'].generateMesh()
+mdb.models['Model-2'].Material(name='Material-Cylinder')
+mdb.models['Model-2'].materials['Material-Cylinder'].Density(table=((10.0, ), 
+    ))
+mdb.models['Model-2'].materials['Material-Cylinder'].Damping(alpha=100.0)
+mdb.models['Model-2'].materials['Material-Cylinder'].Depvar(n=4)
+mdb.models['Model-2'].materials['Material-Cylinder'].UserMaterial(
+    mechanicalConstants=(500.0, 10000.0))
+mdb.models['Model-2'].HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+    integrationRule=GAUSS, material='Material-Cylinder', name=
+    'Section-Cylinder', nodalThicknessField='', numIntPts=3, poissonDefinition=
+    DEFAULT, preIntegrate=OFF, temperature=GRADIENT, thickness=0.01, 
+    thicknessField='', thicknessModulus=None, thicknessType=UNIFORM, 
+    useDensity=OFF)
+mdb.models['Model-2'].parts['Part-Cylinder'].Set(edges=
+    mdb.models['Model-2'].parts['Part-Cylinder'].edges.getSequenceFromMask((
+    '[#1 ]', ), ), name='Set-1')
+mdb.models['Model-2'].parts['Part-Cylinder'].SectionAssignment(offset=0.0, 
+    offsetField='', offsetType=MIDDLE_SURFACE, region=
+    mdb.models['Model-2'].parts['Part-Cylinder'].sets['Set-1'], sectionName=
+    'Section-Cylinder', thicknessAssignment=FROM_SECTION)
+mdb.models['Model-2'].rootAssembly.DatumCsysByThreePoints(coordSysType=
+    CYLINDRICAL, origin=(0.0, 0.0, 0.0), point1=(1.0, 0.0, 0.0), point2=(0.0, 
+    0.0, -1.0))
+mdb.models['Model-2'].rootAssembly.Instance(dependent=ON, name=
+    'Part-Cylinder-1', part=mdb.models['Model-2'].parts['Part-Cylinder'])
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Top', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#2 ]', ), ))
+mdb.models['Model-2'].rootAssembly.Set(name='Set-Anchor', vertices=
+    mdb.models['Model-2'].rootAssembly.instances['Part-Cylinder-1'].vertices.getSequenceFromMask(
+    ('[#1 ]', ), ))
+mdb.models['Model-2'].rootAssembly.regenerate()
+mdb.models['Model-2'].ExplicitDynamicsStep(improvedDtMethod=ON, name='Step-1', 
+    nlgeom=ON, previous='Initial', timeIncrementationMethod=
+    FIXED_USER_DEFINED_INC, timePeriod=100, userDefinedInc=0.0005)
+mdb.models['Model-2'].SmoothStepAmplitude(data=((0.0, 0.0), (10, 1.0), (100, 
+    1.0)), name='Amp-1', timeSpan=STEP)
+mdb.models['Model-2'].ConcentratedForce(amplitude='Amp-1', cf2=0.01, 
+    createStepName='Step-1', distributionType=UNIFORM, field='', localCsys=None
+    , name='Load-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Top'])
+mdb.models['Model-2'].YsymmBC(createStepName='Step-1', localCsys=None, name=
+    'BC-1', region=mdb.models['Model-2'].rootAssembly.sets['Set-Anchor'])
+mdb.Job(activateLoadBalancing=False, atTime=None, contactPrint=OFF, 
+    description='', echoPrint=OFF, explicitPrecision=DOUBLE_PLUS_PACK, 
+    historyPrint=OFF, memory=90, memoryUnits=PERCENTAGE, model='Model-2', 
+    modelPrint=OFF, multiprocessingMode=DEFAULT, name=
+    'Stretch-EvansSkalak-Test-1', nodalOutputPrecision=FULL, numCpus=1, 
+    numDomains=1, queue=None, resultsFormat=ODB, scratch='', type=ANALYSIS, 
+    userSubroutine='', waitHours=0, waitMinutes=0)
+# Save by nmosta5 on 2025_10_22-17.11.17; build 2025 2024_09_20-08.00.46 RELr427 198590

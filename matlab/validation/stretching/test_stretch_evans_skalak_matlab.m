@@ -1,8 +1,10 @@
+%% Evans Skalak Model
+
 clear;
 clc;
-
-
-%% PART
+%% SECTION 1: INPUTS
+% *************************************************************************
+% PART --------------------------------------------------------------------
 CYLINDER_RADIUS = 1;
 CYLINDER_HEIGHT = 1;
 PART_ELEMENTS_NUM = 10;
@@ -10,8 +12,8 @@ PART_NODES_NUM = PART_ELEMENTS_NUM + 1;
 PART_NODES = [CYLINDER_RADIUS * ones(PART_NODES_NUM, 1), linspace(CYLINDER_HEIGHT, 0, PART_NODES_NUM)'];
 PART_ELEMENTS = [1:(PART_NODES_NUM - 1); 2:PART_NODES_NUM]';
 
-%% MATERIAL
-MATERIAL_DENSITY = 10.0;
+% MATERIAL ----------------------------------------------------------------
+MATERIAL_DENSITY = 100.0;
 MATERIAL_DAMPING = 100.0;
 MATERIAL_ROTATIONAL_INERTIA_SCALAR = 500;
 
@@ -19,26 +21,26 @@ MATERIAL_SHEAR_MODULUS = 500.0;
 MATERIAL_BULK_MODULUS = 10000.0;
 MATERIAL_SHEAR_MODULUS_TRANSVERSE = 1.0;
 
-JOB_NAME = "Job_DOF_C4";
+JOB_NAME = "test_stetch_evans_salak_1";
 header = {'t', 'x', 'y'};
 writecell(header, JOB_NAME + ".csv");
-%% SECTION
+% SECTION -----------------------------------------------------------------
 SECTION_THICKNESS = 0.01;
 T = [-1.0/sqrt(3), 1.0/sqrt(3), 1.0/sqrt(3), -1.0/sqrt(3), 0.0, 0.0];
 S = [-1.0/sqrt(3), -1.0/sqrt(3), 1.0/sqrt(3), 1.0/sqrt(3), -1.0/sqrt(3), 1.0/sqrt(3)];
 W = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0];
 
-%% STEPS
+% STEPS -------------------------------------------------------------------
 STEP_DT = 5E-7;
 STEP_TOTAL_TIME = 10.0;
 STEP_STEPS_NUM = floor(STEP_TOTAL_TIME / STEP_DT);
 STEP_PRINT = 1000;
 STEP_TIME = 0;
 
-FORCE_EXTERNAL_VALUE = 0.01;
+FORCE_EXTERNAL_VALUE = 0.1;
 STEP_LOAD = [0, 10.0];
 
-%% ASSEMBLY
+% ASSEMBLY ----------------------------------------------------------------
 ASSEMBLY_ELEMENTS_NUM = PART_ELEMENTS_NUM;
 ASSEMBLY_NODES_NUM = PART_NODES_NUM;
 ASSEMBLY_DOF = [PART_ELEMENTS, PART_ELEMENTS + PART_NODES_NUM];
@@ -56,31 +58,21 @@ DIRECTORS_CURRENT = [ones(PART_NODES_NUM, 1); zeros(PART_NODES_NUM, 1)];
 ANGULAR_VELOCITY_CURRENT = zeros(PART_NODES_NUM, 1);
 ANGULAR_ACCELERATION_CURRENT = zeros(PART_NODES_NUM, 1);
 
-%% BC
-% "TRANSLATION D" == boundary condition over translational degrees of
-% freedom
-% "ROTATION D" == boundary condition over rotational degrees of
-% freedom
+% BC ----------------------------------------------------------------------
+% "TRANSLATION FIX" == fix translational DOF
+% "ROTATION D" == fix rotational DOF
 
 BOUNDARY_CONDITION(1).type = "TRANSLATION FIX";
 BOUNDARY_CONDITION(1).index = 2 * ASSEMBLY_NODES_NUM;
 BOUNDARY_CONDITION(1).value = COORDINATES_INITIAL(2 * ASSEMBLY_NODES_NUM);
-%     BOUNDARY_CONDITION(2).type = "ROTATION FIX";
-%     BOUNDARY_CONDITION(2).index = ASSEMBLY_NODES_NUM;
-%     BOUNDARY_CONDITION(2).value = DIRECTORS_INITIAL(ASSEMBLY_NODES_NUM);
-%     BOUNDARY_CONDITION(3).type = "ROTATION FIX";
-%     BOUNDARY_CONDITION(3).index = 2 * ASSEMBLY_NODES_NUM;
-%     BOUNDARY_CONDITION(3).value = DIRECTORS_INITIAL(2 * ASSEMBLY_NODES_NUM);
-%     BOUNDARY_CONDITION(4).type = "TRANSLATION FIX";
-%     BOUNDARY_CONDITION(4).index = ASSEMBLY_NODES_NUM;
-%     BOUNDARY_CONDITION(4).value = COORDINATES_INITIAL(ASSEMBLY_NODES_NUM);
-% *************************************************************************
+BOUNDARY_CONDITION(2).type = "ROTATION FIX";
+BOUNDARY_CONDITION(2).index = ASSEMBLY_NODES_NUM;
+BOUNDARY_CONDITION(2).value = DIRECTORS_INITIAL(ASSEMBLY_NODES_NUM);
+BOUNDARY_CONDITION(3).type = "ROTATION FIX";
+BOUNDARY_CONDITION(3).index = 2 * ASSEMBLY_NODES_NUM;
+BOUNDARY_CONDITION(3).value = DIRECTORS_INITIAL(2 * ASSEMBLY_NODES_NUM);
 
-%% SETUP
-% *************************************************************************
-%% SHAPE FUNCTIONS
-%% MASS MATRIX
-
+% MASS MATRIX -------------------------------------------------------------
 MASS_MATRIX_GLOBAL = zeros(2*ASSEMBLY_NODES_NUM, 1);
 ROTATIONAL_INERTIA_GLOBAL = zeros(ASSEMBLY_NODES_NUM, 1);
 
@@ -167,15 +159,14 @@ for i = 1:ASSEMBLY_ELEMENTS_NUM
         ROTATIONAL_INERTIA_GLOBAL(DOF_INDEX(1:2)) + ...
         ROTATIONAL_INERTIA_LOCAL_COMPACTED(i, :)';
 end
-
 ROTATIONAL_INERTIA_GLOBAL = ROTATIONAL_INERTIA_GLOBAL * MATERIAL_ROTATIONAL_INERTIA_SCALAR;
 
-TEMP_VARS = zeros(100, 2);
-
+TEMP_VARS = zeros(100, 2); % Temporal field variables
+%% RUN
+% *************************************************************************
+%% TIME LOOP
 for STEP = 1:STEP_STEPS_NUM
-
-    TEST_VAR = 0;
-
+    % INITIALIZE FORCE FIELD ----------------------------------------------
     FORCE_INTERNAL_ELEMENTS = zeros(ASSEMBLY_ELEMENTS_NUM, 4);
     ROTATIONAL_FORCE_INTERNAL_ELEMENTS = zeros(ASSEMBLY_ELEMENTS_NUM, 4);
     TORQUE_INTERNAL_ELEMENTS = zeros(ASSEMBLY_ELEMENTS_NUM, 2);
@@ -184,9 +175,9 @@ for STEP = 1:STEP_STEPS_NUM
     FORCE_EXTERNAL_GLOBAL = zeros(2 * ASSEMBLY_NODES_NUM, 1);
     TORQUE_GLOBAL = zeros(ASSEMBLY_NODES_NUM, 1);
 
-
+    %% ELEMENTS LOOP
     for i = 1:ASSEMBLY_ELEMENTS_NUM
-
+        % DEFINE INITIAL AND CURRENT DEGREES OF FREEDOM
         X_1 = COORDINATES_CURRENT(i);
         X_2 = COORDINATES_CURRENT(i + 1);
         Y_1 = COORDINATES_CURRENT(ASSEMBLY_NODES_NUM + i);
@@ -206,9 +197,9 @@ for STEP = 1:STEP_STEPS_NUM
         PX0_2 = DIRECTORS_INITIAL(i + 1);
         PY0_1 = DIRECTORS_INITIAL(ASSEMBLY_NODES_NUM + i);
         PY0_2 = DIRECTORS_INITIAL(ASSEMBLY_NODES_NUM + i + 1);
-
+        %% GAUSSIAN QUADRATURE INTEGRATION LOOP
         for ig = 1:4
-
+            % COMPUTE SHAPE FUNCTIONS
             N1 = 0.5 * (1 - T(ig));
             N2 = 0.5 * (1 + T(ig));
             N3 = 0.5 * (1 - T(ig)) * SECTION_THICKNESS * S(ig) / 2;
@@ -223,7 +214,7 @@ for STEP = 1:STEP_STEPS_NUM
             DN2_DS = 0;
             DN3_DS = 0.5 * (1 - T(ig)) * SECTION_THICKNESS / 2;
             DN4_DS = 0.5 * (1 + T(ig)) * SECTION_THICKNESS / 2;
-    
+            % COMPUTE INTEGRATION POINT COORDINATES AND DERIVATIVES
             X_IG = N1 * X_1 + ...
                    N2 * X_2 + ...
                    N3 * PX_1 + ...
@@ -238,7 +229,7 @@ for STEP = 1:STEP_STEPS_NUM
                     DN2_DT * Y_2 + ...
                     DN3_DT * PY_1 + ...
                     DN4_DT * PY_2;
-
+            % ROTATING COORDINATES IN LAMINA COORDINATES SYSTEM
             Q11 = DX_DT / sqrt(DX_DT^2 + DY_DT^2);
             Q12 = DY_DT / sqrt(DX_DT^2 + DY_DT^2);
             Q21 = -Q12;
@@ -267,7 +258,7 @@ for STEP = 1:STEP_STEPS_NUM
 
             PX0_2_ROT = Q11 * PX0_2 + Q12 * PY0_2;
             PY0_2_ROT = Q21 * PX0_2 + Q22 * PY0_2;
-
+            % COMPUTING DERIVATIVES OF COORDINATES WRT ISOPARAMETERS
             DX_DT = DN1_DT * X_1_ROT + ...
                     DN2_DT * X_2_ROT + ...
                     DN3_DT * PX_1_ROT + ...
@@ -288,14 +279,14 @@ for STEP = 1:STEP_STEPS_NUM
                     DN3_DS * PY_1_ROT + ...
                     DN4_DS * PY_2_ROT;
             
-            
+            % COMPUTE DETERMINANT OF JACOBIAN MATRIX
             DET_J = DX_DT * DY_DS - DX_DS * DY_DT;
-
+            % COMPUTE DERIVATIVES OF ISOPARAMETERS WRT COORDINATES
             DT_DX = DY_DS / DET_J;
             DT_DY = -DX_DS / DET_J;
             DS_DX = -DY_DT / DET_J;
             DS_DY = DX_DT / DET_J;
-            
+            % COMPUTE DERIVATIVES OF SHAPE FUNCTIONS WRT COORDINATES
             DN1_DX = DT_DX * DN1_DT + DS_DX * DN1_DS;
             DN2_DX = DT_DX * DN2_DT + DS_DX * DN2_DS;
             DN3_DX = DT_DX * DN3_DT + DS_DX * DN3_DS;
@@ -305,7 +296,7 @@ for STEP = 1:STEP_STEPS_NUM
             DN2_DY = DT_DY * DN2_DT + DS_DY * DN2_DS;
             DN3_DY = DT_DY * DN3_DT + DS_DY * DN3_DS;
             DN4_DY = DT_DY * DN4_DT + DS_DY * DN4_DS;
-            
+            % COMPUTE STRAIN-DISPLACEMENT MATRIX
             B51 = Q11 * N1 / X_IG;
             B52 = Q11 * N2 / X_IG;
             B53 = Q21 * N1 / X_IG;
@@ -329,7 +320,7 @@ for STEP = 1:STEP_STEPS_NUM
                      PX0_2_ROT;
                      PY0_1_ROT;
                      PY0_2_ROT];
-
+            % COMPUTE INVERSE OF DEFORMATION GRADIENT MATRIX
             F_INV_11 = B(1, :) * DOF_0;
             F_INV_12 = B(2, :) * DOF_0;
             F_INV_21 = B(3, :) * DOF_0;
@@ -338,62 +329,32 @@ for STEP = 1:STEP_STEPS_NUM
 
             DET_F_INV = F_INV_11 * F_INV_22 * F_INV_33 - ...
                         F_INV_12 * F_INV_21 * F_INV_33;
-
+            % COMPUTE DEFORMATION GRADIENT MATRIX
             F_GRAD_11 = F_INV_22 * F_INV_33 / DET_F_INV;
             F_GRAD_12 = -F_INV_12 * F_INV_33 / DET_F_INV;
             F_GRAD_21 = -F_INV_21 * F_INV_33 / DET_F_INV;
             F_GRAD_22 = F_INV_11 * F_INV_33 / DET_F_INV;
             F_GRAD_33 = (-F_INV_12 * F_INV_21 + F_INV_11 * F_INV_22) / DET_F_INV;
 
-%             B_STRAIN_11 = F_GRAD_11^2 + F_GRAD_12^2;
-%             B_STRAIN_12 = F_GRAD_11 * F_GRAD_21 + F_GRAD_12 * F_GRAD_22;
-%             B_STRAIN_21 = F_GRAD_11 * F_GRAD_21 + F_GRAD_12 * F_GRAD_22;
-%             B_STRAIN_22 = F_GRAD_21^2 + F_GRAD_22^2;
-%             B_STRAIN_33 = F_GRAD_33^2;
-% 
-%             VOL_J = sqrt(B_STRAIN_11 * (B_STRAIN_22 * F_INV_33) - B_STRAIN_12 * (B_STRAIN_21 * B_STRAIN_33));
-% 
-%             B_STAR_11 = VOL_J^(-2.0/3.0)*B_STRAIN_11;
-%             B_STAR_12 = VOL_J^(-2.0/3.0)*B_STRAIN_12;
-%             B_STAR_21 = VOL_J^(-2.0/3.0)*B_STRAIN_21;
-%             B_STAR_22 = VOL_J^(-2.0/3.0)*B_STRAIN_22;
-%             B_STAR_33 = VOL_J^(-2.0/3.0)*B_STRAIN_33;
-%                 
-%                 T1 = (B_STAR_11 + B_STAR_22 + B_STAR_33)/3;
-%                 T2 = MATERIAL_SHEAR_MODULUS/VOL_J;
-%                 T3 = MATERIAL_BULK_MODULUS*(VOL_J - 1.0);
-% 
-%                 if ig < 5
-%                     SIGMA_11 = T2*(B_STAR_11 - T1) + T3;
-%                     SIGMA_12 = 0;
-%                     SIGMA_21 = 0;
-%                     SIGMA_22 = T2*(B_STAR_22 - T1) + T3;
-%                     SIGMA_33 = T2*(B_STAR_33 - T1) + T3;
-%                 else
-%                     SIGMA_11 = 0;
-%                     SIGMA_12 = MATERIAL_SHEAR_MODULUS_TRANSVERSE*B_STAR_12;
-%                     SIGMA_21 = MATERIAL_SHEAR_MODULUS_TRANSVERSE*B_STAR_21;
-%                     SIGMA_22 = 0;
-%                     SIGMA_33 = 0;
-%                 end
+            % COMPUTE STRESS USING LINEAR ELASTIC CONSTITUTIVE MODEL
+            LAMBDA_1 = F_GRAD_11; % Axial principal stretch
+            LAMBDA_2 = F_GRAD_33; % Hoop principal stretch
 
-            EPSILON_11 = F_GRAD_11 - 1.0;  % Axial strain
-            EPSILON_33 = F_GRAD_33 - 1.0;  % Hoop strain
-
-            POISSON_RATIO = (3 * MATERIAL_BULK_MODULUS - 2 * MATERIAL_SHEAR_MODULUS) / ...
-                (6 * MATERIAL_BULK_MODULUS + 2 * MATERIAL_SHEAR_MODULUS);
-            YOUNGS_MODULUS = 2 * MATERIAL_SHEAR_MODULUS*(1 + POISSON_RATIO);
-            FACTOR = YOUNGS_MODULUS / (1 - POISSON_RATIO^2);
+            T1 = MATERIAL_BULK_MODULUS * (LAMBDA_1 * LAMBDA_2 - 1) + ...
+                 MATERIAL_SHEAR_MODULUS * (LAMBDA_1^2 - LAMBDA_2^2) / (2 * LAMBDA_1^2 * LAMBDA_2^2);
+            
+            T2 = MATERIAL_BULK_MODULUS * (LAMBDA_1 * LAMBDA_2 - 1) + ...
+                 MATERIAL_SHEAR_MODULUS * (LAMBDA_2^2 - LAMBDA_1^2) / (2 * LAMBDA_1^2 * LAMBDA_2^2);
 
             if ig < 5
-                SIGMA_11 = FACTOR * (EPSILON_11 + POISSON_RATIO * EPSILON_33);  % Axial stress
+                SIGMA_11 = T1 / SECTION_THICKNESS;  % Axial stress
                 SIGMA_12 = 0;
                 SIGMA_21 = 0;
                 SIGMA_22 = 0;
-                SIGMA_33 = FACTOR * (EPSILON_33 + POISSON_RATIO * EPSILON_11);  % Hoop stress
+                SIGMA_33 = T2 / SECTION_THICKNESS;  % Hoop stress
             end
 
-
+            % COMPUTE LOCAL FORCE FIELDS
             FORCE_LOCAL_ROT = B' * [SIGMA_11; SIGMA_12; SIGMA_21; SIGMA_22; SIGMA_33] * DET_J * X_IG * 2 * pi * W(ig);
 
             FORCE_LOCAL = zeros(8, 1);
@@ -437,6 +398,7 @@ for STEP = 1:STEP_STEPS_NUM
         TORQUE_INTERNAL_ELEMENTS(i, 2) = -ROTATIONAL_FORCE_INTERNAL_ELEMENTS(i, 2) * PY_2 + ...
                                            ROTATIONAL_FORCE_INTERNAL_ELEMENTS(i, 4) * PX_2;
     end
+    % COMPUTE GLOBAL NODAL FORCE FIELD
     for i = 1:ASSEMBLY_ELEMENTS_NUM
         DOF_INDEX = ASSEMBLY_DOF(i, :);
         FORCE_INTERNAL_GLOBAL(DOF_INDEX) = FORCE_INTERNAL_GLOBAL(DOF_INDEX) + FORCE_INTERNAL_ELEMENTS(i, :)';
@@ -454,10 +416,10 @@ for STEP = 1:STEP_STEPS_NUM
     else
         FORCE_EXTERNAL_GLOBAL(ASSEMBLY_NODES_NUM + 1) = 0;
     end
-
+    % VERLET ALGORITHM FOR INTEGRATING TIME
     for i = 1:(2 * ASSEMBLY_NODES_NUM)
-%             FORCE_INTERNAL_GLOBAL(i) = FORCE_INTERNAL_GLOBAL(i) - ...
-%                MATERIAL_DAMPING * MASS_MATRIX_GLOBAL(i) * VELOCITY_CURRENT(i);
+            FORCE_INTERNAL_GLOBAL(i) = FORCE_INTERNAL_GLOBAL(i) - ...
+               MATERIAL_DAMPING * MASS_MATRIX_GLOBAL(i) * VELOCITY_CURRENT(i);
         ACCELERATION_PREVIOUS = ACCELERATION_CURRENT(i);
         ACCELERATION_CURRENT(i) = (FORCE_EXTERNAL_GLOBAL(i) - FORCE_INTERNAL_GLOBAL(i)) / MASS_MATRIX_GLOBAL(i) - ...
             MATERIAL_DAMPING * VELOCITY_CURRENT(i);
@@ -468,10 +430,10 @@ for STEP = 1:STEP_STEPS_NUM
             VELOCITY_CURRENT(i) * STEP_DT + ...
             0.5 * ACCELERATION_PREVIOUS * STEP_DT^2;
     end
-
+    
     for i = 1:ASSEMBLY_NODES_NUM
-%             TORQUE_GLOBAL(i) = TORQUE_GLOBAL(i) - ...
-%                 MATERIAL_DAMPING * ROTATIONAL_INERTIA_GLOBAL(i) * ANGULAR_VELOCITY_CURRENT(i);
+            TORQUE_GLOBAL(i) = TORQUE_GLOBAL(i) - ...
+                MATERIAL_DAMPING * ROTATIONAL_INERTIA_GLOBAL(i) * ANGULAR_VELOCITY_CURRENT(i);
         ANGULAR_ACCELERATION_PREVIOUS = ANGULAR_ACCELERATION_CURRENT(i);
         ANGULAR_ACCELERATION_CURRENT(i) = TORQUE_GLOBAL(i) / ROTATIONAL_INERTIA_GLOBAL(i) - ...
             MATERIAL_DAMPING * ANGULAR_VELOCITY_CURRENT(i);
